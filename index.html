@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instagram & YouTube Video Downloader</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+        
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Poppins', sans-serif; }
+        
+        body { 
+            background: #0f172a; 
+            color: #f8fafc; 
+            display: flex; 
+            justify-content: center; 
+            align-items: center; 
+            min-height: 100vh; 
+            padding: 20px; 
+            background-image: radial-gradient(circle at top right, #1e293b, #0f172a);
+        }
+        
+        .container { 
+            background: rgba(30, 41, 59, 0.6); 
+            backdrop-filter: blur(16px); 
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.08); 
+            border-radius: 24px; 
+            padding: 45px 35px; 
+            width: 100%; 
+            max-width: 680px; 
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.6); 
+            text-align: center; 
+        }
+        
+        .logo { 
+            font-size: 28px; 
+            font-weight: 700; 
+            background: linear-gradient(135deg, #60a5fa, #c084fc); 
+            -webkit-background-clip: text; 
+            -webkit-text-fill-color: transparent; 
+            margin-bottom: 8px; 
+            letter-spacing: -0.5px;
+            line-height: 1.3;
+        }
+        
+        .subtitle { 
+            color: #94a3b8; 
+            font-size: 15px; 
+            margin-bottom: 40px; 
+        }
+        
+        .input-group { 
+            display: flex; 
+            gap: 12px; 
+            margin-bottom: 30px; 
+            flex-direction: column; 
+        }
+        @media(min-width: 500px) { .input-group { flex-direction: row; } }
+        
+        input { 
+            flex: 1; 
+            padding: 18px 24px; 
+            border-radius: 16px; 
+            border: 1px solid #334155; 
+            background: #0b1120; 
+            color: #fff; 
+            font-size: 16px; 
+            outline: none; 
+            transition: all 0.3s ease; 
+        }
+        input:focus { 
+            border-color: #3b82f6; 
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.15); 
+        }
+        
+        button { 
+            background: linear-gradient(135deg, #3b82f6, #6366f1); 
+            color: #fff; 
+            border: none; 
+            padding: 18px 36px; 
+            border-radius: 16px; 
+            font-size: 16px; 
+            font-weight: 600; 
+            cursor: pointer; 
+            transition: all 0.3s ease; 
+        }
+        button:hover { 
+            transform: translateY(-2px); 
+            box-shadow: 0 10px 25px -5px rgba(99, 102, 241, 0.4); 
+        }
+        
+        .loader { 
+            display: none; 
+            margin: 30px auto 15px; 
+            width: 45px; 
+            height: 45px; 
+            border: 4px solid #1e293b; 
+            border-top-color: #60a5fa; 
+            border-radius: 50%; 
+            animation: spin 1s linear infinite; 
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        .status-text { display: none; color: #94a3b8; font-size: 14px; font-weight: 500; }
+        .results { display: none; margin-top: 35px; text-align: left; animation: fadeIn 0.5s ease; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        
+        .results h3 { color: #f1f5f9; font-size: 18px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 1px solid #334155; }
+        
+        .card { 
+            background: rgba(15, 23, 42, 0.4); 
+            border: 1px solid #334155; 
+            border-radius: 16px; 
+            padding: 22px; 
+            margin-bottom: 16px; 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            transition: all 0.3s ease; 
+            flex-wrap: wrap; 
+            gap: 15px; 
+        }
+        .card:hover { border-color: #475569; background: rgba(30, 41, 59, 0.8); transform: translateY(-3px); }
+        
+        .info { display: flex; flex-direction: column; gap: 6px; }
+        .tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 11px; font-weight: 700; width: fit-content; }
+        .tag.hd { background: rgba(16, 185, 129, 0.15); color: #34d399; }
+        .tag.sd { background: rgba(245, 158, 11, 0.15); color: #fbbf24; }
+        .tag.audio { background: rgba(236, 72, 153, 0.15); color: #f472b6; }
+        
+        .title { font-weight: 600; color: #f8fafc; font-size: 17px; }
+        .desc { font-size: 13px; color: #64748b; }
+        
+        .dl-btn { 
+            background: #334155; color: #fff; text-decoration: none; padding: 14px 28px; 
+            border-radius: 12px; font-size: 14px; font-weight: 600; transition: all 0.3s ease; 
+            display: inline-flex; align-items: center; justify-content: center; min-width: 140px; 
+        }
+        .dl-btn:hover { background: #475569; }
+        .dl-btn.primary { background: linear-gradient(135deg, #10b981, #059669); box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2); }
+        .dl-btn.primary:hover { box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4); transform: translateY(-1px); }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <div class="logo">Instagram & YouTube Video Downloader</div>
+        <p class="subtitle">Extract Premium HD Videos & High-Fidelity Audio Instantly.</p>
+        
+        <div class="input-group">
+            <input type="text" id="urlInput" placeholder="Paste media URL here...">
+            <button onclick="fetchMedia()">Extract Now</button>
+        </div>
+        
+        <div class="loader" id="loader"></div>
+        <div class="status-text" id="statusText">Extracting direct links... Please wait.</div>
+        
+        <div class="results" id="results">
+            <h3>Select Output Format</h3>
+            
+            <div class="card">
+                <div class="info">
+                    <span class="tag hd">FULL HD 1080P</span>
+                    <span class="title">High Definition Video</span>
+                    <span class="desc">Maximum quality video (Includes Original Audio)</span>
+                </div>
+                <a href="#" id="hdLink" class="dl-btn primary" target="_blank" rel="noopener">Download HD</a>
+            </div>
+            
+            <div class="card">
+                <div class="info">
+                    <span class="tag sd">STANDARD 480P</span>
+                    <span class="title">Standard Video</span>
+                    <span class="desc">Optimized for mobile & low data usage (Includes Audio)</span>
+                </div>
+                <a href="#" id="sdLink" class="dl-btn" target="_blank" rel="noopener">Download MP4</a>
+            </div>
+            
+            <div class="card">
+                <div class="info">
+                    <span class="tag audio">MP3 AUDIO</span>
+                    <span class="title">High-Fidelity Audio</span>
+                    <span class="desc">Extract background music or voice only (No Video)</span>
+                </div>
+                <a href="#" id="mp3Link" class="dl-btn" target="_blank" rel="noopener">Download MP3</a>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        async function fetchMedia() {
+            const url = document.getElementById('urlInput').value.trim();
+            const loader = document.getElementById('loader');
+            const statusText = document.getElementById('statusText');
+            const results = document.getElementById('results');
+            
+            if(!url) {
+                alert('Please enter a valid URL to extract.');
+                return;
+            }
+            
+            loader.style.display = 'block';
+            statusText.style.display = 'block';
+            results.style.display = 'none';
+            
+            try {
+                const response = await fetch(`/api/download?url=${encodeURIComponent(url)}`);
+                const data = await response.json();
+                
+                if(data.success) {
+                    document.getElementById('hdLink').href = data.hd;
+                    document.getElementById('sdLink').href = data.sd;
+                    document.getElementById('mp3Link').href = data.audio;
+                    
+                    loader.style.display = 'none';
+                    statusText.style.display = 'none';
+                    results.style.display = 'block';
+                } else {
+                    alert('Extraction failed. Ensure the link is valid and public.');
+                    loader.style.display = 'none';
+                    statusText.style.display = 'none';
+                }
+            } catch (error) {
+                alert('Connection timeout. The server might be busy, please try again.');
+                loader.style.display = 'none';
+                statusText.style.display = 'none';
+            }
+        }
+    </script>
+</body>
+</html>
